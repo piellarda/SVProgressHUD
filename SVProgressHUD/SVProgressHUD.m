@@ -724,15 +724,28 @@ static const CGFloat SVProgressHUDUndefinedProgress = -1;
 - (void)showProgress:(float)progress status:(NSString*)string{
     if(!self.overlayView.superview){
 #if !defined(SV_APP_EXTENSIONS)
-        NSEnumerator *frontToBackWindows = [UIApplication.sharedApplication.windows reverseObjectEnumerator];
-        for (UIWindow *window in frontToBackWindows){
-            BOOL windowOnMainScreen = window.screen == UIScreen.mainScreen;
-            BOOL windowIsVisible = !window.hidden && window.alpha > 0;
-            BOOL windowLevelNormal = window.windowLevel == UIWindowLevelNormal;
-            
-            if(windowOnMainScreen && windowIsVisible && windowLevelNormal){
-                [window addSubview:self.overlayView];
-                break;
+        BOOL unityWindowFound = NO;
+        for (UIWindow *window in UIApplication.sharedApplication.windows) {
+            for (id subview in window.subviews) {
+                if ([subview isKindOfClass:NSClassFromString(@"UnityView")]) {
+                    [window addSubview:self.overlayView];
+                    unityWindowFound = YES;
+                    break;
+                }
+            }
+        }
+        
+        if (!unityWindowFound) {
+            NSEnumerator *frontToBackWindows = [UIApplication.sharedApplication.windows reverseObjectEnumerator];
+            for (UIWindow *window in frontToBackWindows){
+                BOOL windowOnMainScreen = window.screen == UIScreen.mainScreen;
+                BOOL windowIsVisible = !window.hidden && window.alpha > 0;
+                BOOL windowLevelNormal = window.windowLevel == UIWindowLevelNormal;
+                
+                if(windowOnMainScreen && windowIsVisible && windowLevelNormal){
+                    [window addSubview:self.overlayView];
+                    break;
+                }
             }
         }
 #else
